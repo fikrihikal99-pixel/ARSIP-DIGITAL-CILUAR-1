@@ -1,0 +1,672 @@
+<!-- Versi HTML Offline Arsip Digital SDN Ciluar 1 -->
+<!-- File ini sudah disempurnakan dan dibuat full offline tanpa CDN eksternal -->
+
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arsip Digital SDN Ciluar 1</title>
+
+  <!-- TailwindCSS Offline (Standar Build Minimal) -->
+  <style>
+    /* CDN Tailwind diganti menjadi style minimal offline */
+    /* Utility dasar (cukup untuk tampilan aplikasi) */
+    *,html{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:#FFF8E7;color:#2C3E50}
+    .flex{display:flex} .flex-col{flex-direction:column}
+    .items-center{align-items:center} .justify-center{justify-content:center}
+    .justify-between{justify-content:space-between} .gap-4{gap:1rem}
+    .p-6{padding:1.5rem} .p-8{padding:2rem} .py-12{padding-top:3rem;padding-bottom:3rem}
+    .rounded-lg{border-radius:0.75rem} .rounded-xl{border-radius:1rem} .rounded-2xl{border-radius:1.25rem}
+    .shadow-lg{box-shadow:0 4px 20px rgba(0,0,0,0.15)} .shadow-2xl{box-shadow:0 6px 25px rgba(0,0,0,0.2)}
+    .w-full{width:100%} .h-full{height:100%} .max-w-md{max-width:28rem} .max-w-6xl{max-width:70rem}
+    .text-center{text-align:center} .text-white{color:white}
+    .text-4xl{font-size:2.25rem} .text-6xl{font-size:3.75rem}
+    .font-bold{font-weight:700} .font-semibold{font-weight:600}
+    .overflow-auto{overflow:auto}
+    .space-y-4 > * + *{margin-top:1rem}
+    .text-sm{font-size:0.9rem} .text-lg{font-size:1.2rem} .text-xl{font-size:1.4rem} .text-2xl{font-size:1.6rem}
+
+    /* Animasi */
+    @keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    .animate-slide-in{animation:slideIn .3s ease-out}
+
+    /* Card hover */
+    .file-card{transition:all .3s ease}
+    .file-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+
+    /* Tombol */
+    .btn{padding:0.75rem 1.2rem;border-radius:0.75rem;font-weight:700;cursor:pointer;border:none}
+    .btn-primary{background:#FF6B6B;color:white}
+    .btn-secondary{background:#4ECDC4;color:white}
+
+    /* Input */
+    input,select{width:100%;padding:0.75rem;border:2px solid #4ECDC4;border-radius:0.75rem}
+
+  </style>
+
+  <!-- Simulasi SDK Offline (Diganti Script Lokal Agar Tetap Jalan) -->
+  <script>
+    /* Emulator Data SDK Offline */
+    window.dataSdk={
+      async init(){this.db=JSON.parse(localStorage.getItem('arsip-db')||'[]');return{isOk:true}},
+      onChange:null,
+      async create(obj){this.db.push(obj);localStorage.setItem('arsip-db',JSON.stringify(this.db));return{isOk:true}},
+      async delete(obj){this.db=this.db.filter(f=>f.id!==obj.id);localStorage.setItem('arsip-db',JSON.stringify(this.db));return{isOk:true}},
+      getAll(){return this.db}
+    };
+
+    /* Emulator elementSdk offline */
+    window.elementSdk={config:{},setConfig(){},init(){}}
+  </script>
+</head>
+<body class="h-full">
+<div id="app" class="w-full h-full"></div>
+
+<script>
+  /* ---- Seluruh kode aplikasi kamu dimasukkan ulang dan disederhanakan untuk offline ---- */
+
+  const defaultConfig={
+    background_color:"#FFF8E7",
+    primary_color:"#FF6B6B",
+    secondary_color:"#4ECDC4",
+    text_color:"#2C3E50",
+    card_color:"#FFFFFF",
+    app_title:"Arsip Digital SDN Ciluar 1",
+    welcome_text:"Selamat datang di sistem arsip digital",
+    font_family:"Arial",
+    font_size:16
+  };
+
+  const USERS=[
+    {username:"AdminC1",password:"Ciluar1",role:"admin",name:"Administrator"},
+    {username:"Ina Islamiati",password:"Ciluar1",role:"user",name:"Ina Islamiati"},
+    {username:"Mulyadi",password:"Ciluar1",role:"user",name:"Mulyadi"},
+    {username:"Nurhalita",password:"Ciluar1",role:"user",name:"Nurhalita"},
+    {username:"Elisnita",password:"Ciluar1",role:"user",name:"Elisnita"},
+    {username:"Kartika Santi",password:"Ciluar1",role:"user",name:"Kartika Santi"},
+    {username:"Noviardi",password:"Ciluar1",role:"user",name:"Noviardi"},
+    {username:"R. Yayan Mardianah",password:"Ciluar1",role:"user",name:"R. Yayan Mardianah"},
+    {username:"Enzarkasih",password:"Ciluar1",role:"user",name:"Enzarkasih"},
+    {username:"Deni Febianto",password:"Ciluar1",role:"user",name:"Deni Febianto"},
+    {username:"Alinda Septiyani Nopiyati",password:"Ciluar1",role:"user",name:"Alinda Septiyani Nopiyati"},
+    {username:"JOVICA ANISSA PURI",password:"Ciluar1",role:"user",name:"JOVICA ANISSA PURI"},
+    {username:"RIA APRILIA",password:"Ciluar1",role:"user",name:"RIA APRILIA"},
+    {username:"DEVI CAHYA",password:"Ciluar1",role:"user",name:"DEVI CAHYA"},
+    {username:"FIKRI HIKAL",password:"Ciluar1",role:"user",name:"FIKRI HIKAL"},
+    {username:"YATI HARYATI",password:"Ciluar1",role:"user",name:"YATI HARYATI"}
+  ];
+
+  let currentUser=null;
+  let allFiles=[];
+
+  async function initApp(){
+    await window.dataSdk.init();
+    allFiles=window.dataSdk.getAll();
+    renderLogin();
+  }
+
+  /* --- RENDER LOGIN --- */
+  function renderLogin(){
+    const app=document.getElementById('app');
+    app.innerHTML=`
+      <div class="w-full h-full flex items-center justify-center p-8 overflow-auto">
+        <div class="rounded-2xl shadow-2xl p-8 w-full max-w-md animate-slide-in" style="background:white">
+          <div class="text-center mb-8">
+            <div class="text-6xl mb-4">🏫</div>
+            <h1 class="text-2xl font-bold" style="color:#FF6B6B">${defaultConfig.app_title}</h1>
+            <p>${defaultConfig.welcome_text}</p>
+          </div>
+          <form id="loginForm" class="space-y-4">
+            <div>
+              <label class="font-semibold">Username</label>
+              <input type="text" id="username" required />
+            </div>
+            <div>
+              <label class="font-semibold">Password</label>
+              <input type="password" id="password" required />
+            </div>
+            <div id="errorMessage" style="color:red;display:none"></div>
+            <button class="btn btn-primary w-full" type="submit">Masuk</button>
+          </form>
+        </div>
+      </div>`;
+
+    document.getElementById('loginForm').addEventListener('submit',handleLogin);
+  }
+
+  function handleLogin(e){
+    e.preventDefault();
+    const u=document.getElementById('username').value;
+    const p=document.getElementById('password').value;
+    const user=USERS.find(x=>x.username.toLowerCase()===u.toLowerCase()&&x.password===p);
+    if(!user){
+      const err=document.getElementById('errorMessage');
+      err.textContent="Username atau password salah";
+      err.style.display='block';
+      return;
+    }
+    currentUser=user;
+    renderDashboard();
+  }
+
+  /* --- DASHBOARD --- */
+  function renderDashboard(){
+    const app=document.getElementById('app');
+    const userFiles=currentUser.role==='admin'?allFiles:allFiles.filter(f=>f.uploadedBy===currentUser.username);
+
+    app.innerHTML=`
+      <div class="w-full h-full flex flex-col overflow-auto">
+        <header class="shadow-lg p-6 rounded-xl" style="background:white">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-4">
+              <div class="text-4xl">📚</div>
+              <div>
+                <h1 class="text-2xl font-bold" style="color:#FF6B6B">${defaultConfig.app_title}</h1>
+                <p class="text-sm">Halo, ${currentUser.name}</p>
+              </div>
+            </div>
+            <button class="btn btn-secondary" onclick="logout()">Keluar</button>
+          </div>
+        </header>
+
+        <main class="p-6 overflow-auto flex-1">
+          <div class="max-w-6xl mx-auto">
+
+            <!-- UPLOAD -->
+            <div class="p-6 rounded-xl shadow-lg mb-6" style="background:white">
+              <h2 class="text-xl font-bold mb-4" style="color:#FF6B6B">📤 Upload File Baru</h2>
+              <form id="uploadForm" class="space-y-4">
+                <div>
+                  <label class="font-semibold">Nama File</label>
+                  <input id="fileName" required />
+                </div>
+                <div>
+                  <label class="font-semibold">Kategori</label>
+                  <select id="category">
+                    <option>Administrasi</option>
+                    <option>Kurikulum</option>
+                    <option>Kesiswaan</option>
+                    <option>Surat</option>
+                    <option>Lainnya</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="font-semibold">Pilih File (Gambar/PDF)</label>
+                  <input type="file" id="fileInput" accept="image/*,.pdf" required />
+                </div>
+                <button class="btn btn-primary" type="submit">Upload</button>
+              </form>
+            </div>
+
+            <!-- LIST FILE -->
+            <div class="p-6 rounded-xl shadow-lg" style="background:white">
+              <h2 class="text-xl font-bold mb-4" style="color:#FF6B6B">📁 Arsip (${userFiles.length})</h2>
+              <div id="filesList">${renderFiles(userFiles)}</div>
+            </div>
+
+          </div>
+        </main>
+      </div>`;
+
+    document.getElementById('uploadForm').addEventListener('submit',handleUpload);
+  }
+
+  function renderFiles(files){
+    if(files.length===0) return `<p class="py-12 text-center">📭 Belum ada file</p>`;
+    return files.map(f=>{
+      const icon=f.fileType==="application/pdf"?"📄":"🖼️";
+      return`
+        <div class="file-card p-4 rounded-lg shadow flex justify-between items-center mb-3" style="background:white">
+          <div class="flex items-center gap-4">
+            <div class="text-4xl">${icon}</div>
+            <div>
+              <h3 class="font-bold">${f.fileName}</h3>
+              <p class="text-sm" style="opacity:.7">📂 ${f.category} | 👤 ${f.uploadedBy}</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-secondary" onclick="downloadFile('${f.id}')">⬇️</button>
+            ${currentUser.role==='admin'?`<button class="btn" style="background:red;color:white" onclick="deleteFile('${f.id}')">🗑️</button>`:''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function handleUpload(e){
+    e.preventDefault();
+    const fileInput=document.getElementById('fileInput').files[0];
+    if(!fileInput) return alert("Pilih file dulu");
+
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      const newFile={
+        id:Date.now().toString(),
+        fileName:document.getElementById('fileName').value,
+        category:document.getElementById('category').value,
+        uploadedBy:currentUser.username,
+        fileType:fileInput.type,
+        fileData:ev.target.result,
+        uploadDate:new Date().toISOString()
+      };
+      window.dataSdk.create(newFile).then(()=>{
+        allFiles.push(newFile);
+        renderDashboard();
+      });
+    };
+    reader.readAsDataURL(fileInput);
+  }
+
+  function downloadFile(id){
+    const file=allFiles.find(f=>f.id===id);
+    const link=document.createElement('a');
+    link.href=file.fileData;
+    link.download=file.fileName;
+    link.click();
+  }
+
+  function deleteFile(id){
+    const file=allFiles.find(f=>f.id===id);
+    window.dataSdk.delete(file).then(()=>{
+      allFiles=allFiles.filter(f=>f.id!==id);
+      renderDashboard();
+    });
+  }
+
+  function logout(){currentUser=null;renderLogin();}
+
+  initApp();
+</script>
+
+</body>
+</html>
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arsip Digital SDN Ciluar 1</title>
+  <link rel="stylesheet" href="https://cdn.tailwindcss.com">
+  <style>
+    body { box-sizing: border-box; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px);} to { opacity: 1; transform: translateY(0);} }
+    .animate-slide-in { animation: slideIn 0.3s ease-out; }
+    .file-card { transition: all 0.3s ease; }
+    .file-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+  </style>
+</head>
+<body class="h-full">
+<div id="app" class="w-full h-full"></div>
+<script>
+/* ————————————————————————————————
+   APLIKASI ARSIP DIGITAL OFFLINE
+   Versi Offline — Tidak memakai dataSdk / elementSdk
+———————————————————————————————— */
+
+// Penyimpanan menggunakan localStorage
+let allFiles = JSON.parse(localStorage.getItem('arsipFiles') || '[]');
+
+function saveFiles() {
+    localStorage.setItem('arsipFiles', JSON.stringify(allFiles));
+}
+
+// Data user
+const USERS = [
+ { username: "AdminC1", password: "Ciluar1", role: "admin", name: "Administrator" },
+ { username: "Ina Islamiati", password: "Ciluar1", role: "user", name: "Ina Islamiati" },
+ { username: "Mulyadi", password: "Ciluar1", role: "user", name: "Mulyadi" },
+ { username: "Nurhalita", password: "Ciluar1", role: "user", name: "Nurhalita" },
+ { username: "Elisnita", password: "Ciluar1", role: "user", name: "Elisnita" },
+ { username: "Kartika Santi", password: "Ciluar1", role: "user", name: "Kartika Santi" },
+ { username: "Noviardi", password: "Ciluar1", role: "user", name: "Noviardi" },
+ { username: "R. Yayan Mardianah", password: "Ciluar1", role: "user", name: "R. Yayan Mardianah" },
+ { username: "Enzarkasih", password: "Ciluar1", role: "user", name: "Enzarkasih" },
+ { username: "Deni Febianto", password: "Ciluar1", role: "user", name: "Deni Febianto" },
+ { username: "Alinda Septiyani Nopiyati", password: "Ciluar1", role: "user", name: "Alinda Septiyani Nopiyati" },
+ { username: "JOVICA ANISSA PURI", password: "Ciluar1", role: "user", name: "JOVICA ANISSA PURI" },
+ { username: "RIA APRILIA", password: "Ciluar1", role: "user", name: "RIA APRILIA" },
+ { username: "DEVI CAHYA", password: "Ciluar1", role: "user", name: "DEVI CAHYA" },
+ { username: "FIKRI HIKAL", password: "Ciluar1", role: "user", name: "FIKRI HIKAL" },
+ { username: "YATI HARYATI", password: "Ciluar1", role: "user", name: "YATI HARYATI" }
+];
+
+let currentUser = null;
+
+// LOGIN PAGE
+function renderLogin() {
+ document.getElementById('app').innerHTML = `
+ <div class="w-full h-full flex items-center justify-center p-8">
+   <div class="w-full max-w-md p-8 rounded-2xl shadow-2xl bg-white animate-slide-in">
+     <div class="text-center mb-8">
+       <div class="text-6xl mb-4">🏫</div>
+       <h1 class="text-3xl font-bold text-red-500">Arsip Digital SDN Ciluar 1</h1>
+       <p class="text-gray-600">Selamat datang di sistem arsip digital</p>
+     </div>
+
+     <form id="loginForm" class="space-y-4">
+       <div>
+         <label class="block mb-2 font-semibold">Username</label>
+         <input id="username" type="text" class="w-full px-4 py-3 border rounded-lg">
+       </div>
+       <div>
+         <label class="block mb-2 font-semibold">Password</label>
+         <input id="password" type="password" class="w-full px-4 py-3 border rounded-lg">
+       </div>
+       <div id="errorMessage" class="text-red-600 text-sm hidden"></div>
+       <button class="w-full bg-red-500 text-white py-3 rounded-lg font-bold">Masuk</button>
+     </form>
+   </div>
+ </div>`;
+
+ document.getElementById('loginForm').addEventListener('submit', handleLogin);
+}
+
+function handleLogin(e) {
+ e.preventDefault();
+ const username = document.getElementById('username').value;
+ const password = document.getElementById('password').value;
+ const user = USERS.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+ if (!user) {
+   const err = document.getElementById('errorMessage');
+   err.textContent = "Username atau password salah";
+   err.classList.remove('hidden');
+   return;
+ }
+ currentUser = user;
+ renderDashboard();
+}
+
+// DASHBOARD
+function renderDashboard() {
+ const userFiles = currentUser.role === 'admin' ? allFiles : allFiles.filter(f => f.uploadedBy === currentUser.username);
+
+ document.getElementById('app').innerHTML = `
+ <div class="h-full flex flex-col">
+   <header class="bg-white p-6 shadow">
+     <div class="flex justify-between items-center">
+       <div class="flex items-center gap-4">
+         <div class="text-4xl">📚</div>
+         <div>
+           <h1 class="text-xl font-bold text-red-500">Arsip Digital SDN Ciluar 1</h1>
+           <p class="text-sm">Halo, ${currentUser.name}</p>
+         </div>
+       </div>
+       <button onclick="logout()" class="px-4 py-2 bg-blue-500 text-white rounded-lg">Keluar</button>
+     </div>
+   </header>
+
+   <main class="flex-1 p-6 overflow-auto">
+     <div class="max-w-4xl mx-auto">
+       <div class="bg-white p-6 rounded-xl shadow mb-6">
+         <h2 class="text-lg font-bold mb-4 text-red-500">📤 Upload File Baru</h2>
+         <form id="uploadForm" class="space-y-4">
+           <div>
+             <label class="block mb-2 font-semibold">Nama File</label>
+             <input id="fileName" class="w-full px-4 py-2 border rounded-lg" required>
+           </div>
+           <div>
+             <label class="block mb-2 font-semibold">Kategori</label>
+             <select id="category" class="w-full px-4 py-2 border rounded-lg">
+               <option>Administrasi</option>
+               <option>Kurikulum</option>
+               <option>Kesiswaan</option>
+               <option>Surat</option>
+               <option>Lainnya</option>
+             </select>
+           </div>
+           <div>
+             <label class="block mb-2 font-semibold">Pilih File</label>
+             <input id="fileInput" type="file" accept="image/*,.pdf" class="w-full px-4 py-2 border rounded-lg" required>
+           </div>
+           <button class="px-6 py-3 bg-red-500 text-white rounded-lg font-bold">Upload</button>
+         </form>
+       </div>
+
+       <div class="bg-white p-6 rounded-xl shadow">
+         <h2 class="text-lg font-bold mb-4 text-red-500">📁 Daftar Arsip (${userFiles.length})</h2>
+         <div id="filesList">
+           ${renderFilesList(userFiles)}
+         </div>
+       </div>
+     </div>
+   </main>
+ </div>`;
+
+ document.getElementById('uploadForm').addEventListener('submit', handleUpload);
+}
+
+function renderFilesList(files) {
+ if (files.length === 0) return `<p class='text-center py-8 text-gray-500'>📭 Belum ada file</p>`;
+ return files.map(file => `
+   <div class="p-4 border rounded-lg shadow mb-3 flex justify-between items-center">
+     <div>
+       <p class="font-bold text-gray-800">${file.fileName}</p>
+       <p class="text-sm text-gray-500">📂 ${file.category} • 👤 ${file.uploadedBy}</p>
+     </div>
+     <div class="flex gap-2">
+       <button onclick="downloadFile('${file.id}')" class="px-3 py-1 bg-blue-500 text-white rounded">Unduh</button>
+       <button onclick=\"deleteFile('${file.id}')\" class=\"px-3 py-1 bg-red-500 text-white rounded\">Hapus</button>
+     </div>
+   </div>`).join('');
+}
+
+// UPLOAD
+function handleUpload(e) {
+ e.preventDefault();
+ const name = document.getElementById('fileName').value;
+ const cat = document.getElementById('category').value;
+ const file = document.getElementById('fileInput').files[0];
+ const reader = new FileReader();
+ reader.onload = function(e) {
+   allFiles.push({ id: Date.now(), fileName: name, category: cat, fileData: e.target.result, uploadedBy: currentUser.username });
+   saveFiles();
+   renderDashboard();
+ };
+ reader.readAsDataURL(file);
+}
+
+// DOWNLOAD
+function downloadFile(id) {
+ const file = allFiles.find(f => f.id == id);
+ const link = document.createElement('a');
+ link.href = file.fileData;
+ link.download = file.fileName;
+ link.click();
+}
+
+// DELETE
+function deleteFile(id) {
+ allFiles = allFiles.filter(f => f.id != id);
+ saveFiles();
+ renderDashboard();
+}
+
+// LOGOUT
+function logout() {
+ currentUser = null;
+ renderLogin();
+}
+
+renderLogin();
+</script>
+
+<!-- === INTEGRASI GOOGLE DRIVE (Client-side) === -->
+<!-- Tambahkan di bawah jika ingin fitur otomatis ke Google Drive. Ikuti instruksi di README singkat di bawah -->
+
+<!-- README SINGKAT: Cara setup Google Cloud -->
+<!-- 1) Buat Google Cloud Project di https://console.cloud.google.com
+     2) Enable Google Drive API pada project
+     3) Buat OAuth 2.0 Client ID (Tipe: Web application)
+        - Authorized JavaScript origins: https://<your-github-username>.github.io
+        - Authorized redirect URIs: https://<your-github-username>.github.io
+     4) Catat CLIENT_ID dan API_KEY, lalu masukkan ke variabel di bawah
+     5) Ganti FOLDER_ID dengan ID folder Drive kamu (sudah diisi contoh)
+-->
+
+<script>
+// ======= CONFIG =======
+const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com'; // ganti dengan CLIENT_ID-mu
+const API_KEY = 'YOUR_API_KEY'; // ganti dengan API_KEY-mu
+const FOLDER_ID = '1G05CnSbHllIbthjyolpWGMaMl7T0f_wG'; // folder Drive yang kamu berikan
+const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
+const SCOPES = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file';
+
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
+let accessToken = null;
+
+function gapiLoaded() {
+  gapi.load('client', initializeGapiClient);
+}
+
+async function initializeGapiClient() {
+  await gapi.client.init({ apiKey: API_KEY, discoveryDocs: DISCOVERY_DOCS });
+  gapiInited = true;
+}
+
+function gisLoaded() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (resp) => {
+      if (resp.error) {
+        console.error('Token error', resp);
+        return;
+      }
+      accessToken = resp.access_token;
+      gapi.client.setToken({ access_token: accessToken });
+      // setelah dapat token, ambil daftar file
+      listFilesInFolder(FOLDER_ID);
+    }
+  });
+  gisInited = true;
+}
+
+// Panggil ini saat tombol login Google diklik
+function handleAuthClick() {
+  if (!gapiInited || !gisInited) return alert('Library belum siap. Tunggu sebentar.');
+  // prompt: 'consent' akan memaksa consent tiap kali (berguna saat setup)
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+// List file di folder tertentu
+async function listFilesInFolder(folderId) {
+  try {
+    const res = await gapi.client.drive.files.list({
+      q: `'${folderId}' in parents and trashed=false`,
+      pageSize: 100,
+      fields: 'files(id,name,mimeType,webViewLink,thumbnailLink,parents)'
+    });
+    const files = res.result.files || [];
+    // konversi ke format aplikasi dan render
+    allFiles = files.map(f => ({
+      id: f.id,
+      fileName: f.name,
+      fileType: f.mimeType,
+      fileData: f.webViewLink || '',
+      uploadedBy: 'GoogleDrive',
+      uploadDate: new Date().toISOString(),
+      category: 'Dari Drive'
+    }));
+    saveFiles(); // optional: simpan cache di localStorage
+    renderDashboard();
+  } catch (err) {
+    console.error('Gagal list file', err);
+    alert('Gagal mengambil daftar file dari Google Drive. Cek console.');
+  }
+}
+
+// Upload file ke folder Drive menggunakan multipart upload
+async function uploadFileToDrive(file, folderId) {
+  if (!accessToken) {
+    alert('Belum login ke Google — klik tombol Login Google terlebih dahulu');
+    return null;
+  }
+  const metadata = {
+    name: file.name,
+    parents: [folderId]
+  };
+
+  const form = new FormData();
+  const blob = new Blob([JSON.stringify(metadata)], { type: 'application/json' });
+  form.append('metadata', blob);
+  form.append('file', file);
+
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + accessToken },
+    body: form
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+  return await res.json();
+}
+
+// Hook ke form upload yang ada di halaman utama: modifikasi handleUpload
+const originalHandleUpload = handleUpload; // simpan reference
+async function handleUpload(e) {
+  e.preventDefault();
+  const fileInput = document.getElementById('fileInput');
+  const file = fileInput.files[0];
+  if (!file) return alert('Pilih file terlebih dahulu');
+
+  try {
+    // kalau token tersedia, upload ke Drive. Jika tidak, fallback ke localStorage
+    if (accessToken) {
+      const result = await uploadFileToDrive(file, FOLDER_ID);
+      alert('File berhasil diupload ke Google Drive: ' + result.name);
+      // setelah upload, refresh list
+      listFilesInFolder(FOLDER_ID);
+    } else {
+      // fallback: simpan lokal
+      originalHandleUpload(e);
+    }
+  } catch (err) {
+    console.error('Upload ke Drive gagal', err);
+    alert('Gagal upload ke Drive. Cek console.');
+  }
+}
+
+// Tambahkan tombol login Google pada UI (panggil ini setelah renderDashboard)
+function injectGoogleLoginButton() {
+  const header = document.querySelector('header .flex.justify-between');
+  if (!header) return;
+  if (document.getElementById('googleAuthBtn')) return;
+  const btn = document.createElement('button');
+  btn.id = 'googleAuthBtn';
+  btn.textContent = 'Login Google';
+  btn.className = 'px-4 py-2 bg-green-600 text-white rounded-lg';
+  btn.style.marginLeft = '8px';
+  btn.onclick = handleAuthClick;
+  header.appendChild(btn);
+}
+
+// Panggil ini setelah load halaman agar tombol muncul
+const injectInterval = setInterval(() => {
+  if (document.querySelector('header')) {
+    injectGoogleLoginButton();
+    clearInterval(injectInterval);
+  }
+}, 500);
+
+// Load external libs
+(function loadLibs(){
+  const s1 = document.createElement('script');
+  s1.src = 'https://apis.google.com/js/api.js';
+  s1.onload = gapiLoaded;
+  document.head.appendChild(s1);
+
+  const s2 = document.createElement('script');
+  s2.src = 'https://accounts.google.com/gsi/client';
+  s2.onload = gisLoaded;
+  document.head.appendChild(s2);
+})();
+</script>
+
+</body>
+</html>
