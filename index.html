@@ -1,271 +1,306 @@
-<!-- Versi HTML Online Terintegrasi Apps Script -->
-<!-- File ini sudah di-rebuild (Pilihan A). Terhubung ke Apps Script publik milikmu untuk upload/list/delete -->
-
 <!doctype html>
 <html lang="id" class="h-full">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Arsip Digital SDN Ciluar 1 — Online</title>
+  <title>Arsip Digital SDN Ciluar 1 — Login</title>
   <style>
-    /* Minimal UI CSS (responsive & ringan) */
     *{box-sizing:border-box;font-family:Arial, sans-serif}
     body{margin:0;background:#FFF8E7;color:#2C3E50}
     .container{max-width:980px;margin:24px auto;padding:16px}
-    header{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
-    .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,0.08);}
-    .flex{display:flex} .gap-8{gap:8px} .gap-4{gap:8px}
-    input[type=text],select,input[type=file]{width:100%;padding:10px;border:2px solid #E6F4F0;border-radius:8px}
+
+    .card{background:#fff;border-radius:12px;padding:16px;
+          box-shadow:0 6px 18px rgba(0,0,0,0.08);}
+
+    input[type=text],input[type=password],select,input[type=file]{
+      width:100%;padding:10px;border:2px solid #E6F4F0;border-radius:8px;
+    }
+
     button{padding:10px 14px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
     .btn-primary{background:#FF6B6B;color:#fff}
     .btn-secondary{background:#4ECDC4;color:#fff}
-    .list-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:8px;border:1px solid #f0f0f0;margin-bottom:10px}
+
+    .list-item{display:flex;justify-content:space-between;align-items:center;
+               padding:12px;border-radius:8px;border:1px solid #f0f0f0;margin-bottom:10px}
     .muted{opacity:.7;font-size:0.95rem}
-    .small{font-size:0.9rem}
+
+    /* Login Box */
+    #loginScreen{
+      max-width:400px;margin:60px auto;padding:20px;
+      background:#fff;border-radius:12px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <header>
-      <div>
-        <h1 style="margin:0">📚 Arsip Digital SDN Ciluar 1</h1>
-        <div class="muted small">Aplikasi online — terhubung ke Google Drive melalui Apps Script</div>
+
+<!-- ======================= LOGIN SCREEN ======================= -->
+<div id="loginScreen">
+  <h2 style="margin-top:0;text-align:center">🔐 Login Arsip Digital</h2>
+  
+  <label>Username</label>
+  <input id="loginUser" type="text" placeholder="Masukkan username" style="margin-bottom:10px">
+
+  <label>Password</label>
+  <input id="loginPass" type="password" placeholder="Masukkan password" style="margin-bottom:16px">
+
+  <button id="loginBtn" class="btn-primary" style="width:100%">Login</button>
+
+  <div id="loginError" style="color:red;margin-top:10px;text-align:center"></div>
+</div>
+
+<!-- ======================= APP SCREEN ======================= -->
+<div class="container" id="appScreen" style="display:none">
+
+  <header style="display:flex;justify-content:space-between;align-items:center;padding:12px 0">
+    <div>
+      <h1 style="margin:0">📚 Arsip Digital SDN Ciluar 1</h1>
+      <div class="muted">Aplikasi online — terhubung ke Google Drive</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="logout()" class="btn-secondary">Logout</button>
+      <a href="#" id="refreshBtn" class="btn-secondary">Refresh</a>
+    </div>
+  </header>
+
+  <section class="card" id="uploader">
+    <h2 style="margin-top:0">📤 Upload File</h2>
+    <form id="formUpload">
+      <div style="margin-bottom:8px">
+        <label>Nama file (opsional)</label>
+        <input type="text" id="fileName" placeholder="Contoh: SK Pembagian Tugas" />
       </div>
-      <div>
-        <a href="#" id="refreshBtn" class="btn btn-secondary">Refresh</a>
+      <div style="margin-bottom:8px">
+        <label>Kategori</label>
+        <select id="category">
+          <option>Administrasi</option>
+          <option>Kurikulum</option>
+          <option>Kesiswaan</option>
+          <option>Surat</option>
+          <option>Lainnya</option>
+        </select>
       </div>
-    </header>
+      <div style="margin-bottom:12px">
+        <input type="file" id="fileInput" accept="image/*,.pdf" required />
+      </div>
+      <div style="display:flex;gap:8px">
+        <button type="submit" class="btn-primary">Upload ke Drive</button>
+        <button type="button" id="uploadLocal" class="btn" style="background:#999;color:#fff">Simpan Lokal</button>
+      </div>
+      <div id="status" style="margin-top:10px;color:#333"></div>
+    </form>
+  </section>
 
-    <section class="card" id="uploader">
-      <h2 style="margin-top:0">📤 Upload File</h2>
-      <form id="formUpload">
-        <div style="margin-bottom:8px">
-          <label>Nama file (opsional)</label>
-          <input type="text" id="fileName" placeholder="Contoh: SK Pembagian Tugas" />
-        </div>
-        <div style="margin-bottom:8px">
-          <label>Kategori</label>
-          <select id="category">
-            <option>Administrasi</option>
-            <option>Kurikulum</option>
-            <option>Kesiswaan</option>
-            <option>Surat</option>
-            <option>Lainnya</option>
-          </select>
-        </div>
-        <div style="margin-bottom:12px">
-          <input type="file" id="fileInput" accept="image/*,.pdf" required />
-        </div>
-        <div style="display:flex;gap:8px">
-          <button type="submit" class="btn btn-primary">Upload ke Drive</button>
-          <button type="button" id="uploadLocal" class="btn" style="background:#999;color:#fff">Simpan Lokal (jika perlu)</button>
-        </div>
-        <div id="status" style="margin-top:10px;color:#333"></div>
-      </form>
-    </section>
+  <section style="margin-top:16px" class="card">
+    <h2 style="margin-top:0">📁 Daftar Arsip</h2>
+    <div id="filesList"></div>
+    <div id="emptyNotice" class="muted" style="display:none">Belum ada file di folder Drive.</div>
+  </section>
 
-    <section style="margin-top:16px" class="card">
-      <h2 style="margin-top:0">📁 Daftar Arsip</h2>
-      <div id="filesList"></div>
-      <div id="emptyNotice" class="muted" style="display:none">Belum ada file di folder Drive.</div>
-    </section>
+  <footer style="margin-top:12px;text-align:center;color:#666;font-size:0.9rem">
+      Terhubung ke Apps Script: <span id="apiUrl"></span>
+  </footer>
+</div>
 
-    <footer style="margin-top:12px;text-align:center;color:#666;font-size:0.9rem">Terhubung ke Apps Script: <span id="apiUrl"></span></footer>
-  </div>
-
+<!-- ======================= SCRIPT ======================= -->
 <script>
-// === CONFIG ===
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxhV_NL5xdL6-32ZojhgWtlr7a1rkw6HnbvkBXeWSQLiuadYy8zN58ooj2XkqQJTZu3/exec';
-// Catatan: Pastikan Apps Script yang kamu deploy mendukung GET => daftar file, dan POST => upload.
+// ==========================================================
+// =========================== USERS ========================
+// ==========================================================
+const USERS = [
+  { username: "AdminC1", password: "Ciluar1", role: "admin", name: "Administrator" },
+  { username: "Ina Islamiati", password: "Ciluar1", role: "user", name: "Ina Islamiati" },
+  { username: "Mulyadi", password: "Ciluar1", role: "user", name: "Mulyadi" },
+  { username: "Nurhalita", password: "Ciluar1", role: "user", name: "Nurhalita" },
+  { username: "Elisnita", password: "Ciluar1", role: "user", name: "Elisnita" },
+  { username: "Kartika Santi", password: "Ciluar1", role: "user", name: "Kartika Santi" },
+  { username: "Noviardi", password: "Ciluar1", role: "user", name: "Noviardi" },
+  { username: "R. Yayan Mardianah", password: "Ciluar1", role: "user", name: "R. Yayan Mardianah" },
+  { username: "Enzarkasih", password: "Ciluar1", role: "user", name: "Enzarkasih" },
+  { username: "Deni Febianto", password: "Ciluar1", role: "user", name: "Deni Febianto" },
+  { username: "Alinda Septiyani Nopiyati", password: "Ciluar1", role: "user", name: "Alinda Septiyani Nopiyati" },
+  { username: "JOVICA ANISSA PURI", password: "Ciluar1", role: "user", name: "JOVICA ANISSA PURI" },
+  { username: "RIA APRILIA", password: "Ciluar1", role: "user", name: "RIA APRILIA" },
+  { username: "DEVI CAHYA", password: "Ciluar1", role: "user", name: "DEVI CAHYA" },
+  { username: "FIKRI HIKAL", password: "Ciluar1", role: "user", name: "FIKRI HIKAL" },
+  { username: "YATI HARYATI", password: "Ciluar1", role: "user", name: "YATI HARYATI" }
+];
 
-// === STATE ===
+// ==========================================================
+// =========================== LOGIN =========================
+// ==========================================================
+function $(id){return document.getElementById(id)}
+
+function checkLogin(){
+  const user = localStorage.getItem("activeUser");
+  if(user){
+    $("loginScreen").style.display="none";
+    $("appScreen").style.display="block";
+
+    const u = JSON.parse(user);
+    document.querySelector("header h1").innerHTML =
+      "📚 Arsip Digital — " + u.name;
+
+    return true;
+  }
+  return false;
+}
+
+$("loginBtn").addEventListener("click", ()=>{
+  const user = $("loginUser").value.trim();
+  const pass = $("loginPass").value.trim();
+
+  const found = USERS.find(u =>
+    u.username.toLowerCase() === user.toLowerCase() &&
+    u.password === pass
+  );
+
+  if(!found){
+    $("loginError").textContent = "Username atau password salah!";
+    return;
+  }
+
+  localStorage.setItem("activeUser", JSON.stringify(found));
+  checkLogin();
+  fetchFiles();
+});
+
+function logout(){
+  localStorage.removeItem("activeUser");
+  location.reload();
+}
+
+// ==========================================================
+// =============== ARSIP DRIVE (UPLOAD/LIST/DELETE) =========
+// ==========================================================
+
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxhV_NL5xdL6-32ZojhgWtlr7a1rkw6HnbvkBXeWSQLiuadYy8zN58ooj2XkqQJTZu3/exec";
+
 let files = [];
-const $ = id => document.getElementById(id);
 $('apiUrl').textContent = WEB_APP_URL;
 
-// === HELPERS ===
+// helpers
 function toLocalTimeString(dateStr){
-  try{ return new Date(dateStr).toLocaleString('id-ID'); }catch(e){return dateStr}
+  try{return new Date(dateStr).toLocaleString('id-ID')}catch(e){return dateStr}
 }
 
-function showStatus(msg, timeout=3000){
-  $('status').textContent = msg;
-  if(timeout) setTimeout(()=>{$('status').textContent='';}, timeout);
+function showStatus(msg,timeout=3000){
+  $('status').textContent=msg;
+  if(timeout) setTimeout(()=>$('status').textContent="",timeout);
 }
 
-// === RENDER ===
+// UI
 function renderFiles(){
   const list = $('filesList');
   list.innerHTML='';
-  if(!files || files.length===0){
+  if(!files || files.length === 0){
     $('emptyNotice').style.display='block';
     return;
   }
   $('emptyNotice').style.display='none';
 
   files.forEach(f=>{
-    const div = document.createElement('div');
+    const div=document.createElement('div');
     div.className='list-item';
 
-    const left = document.createElement('div');
-    left.innerHTML = `<div style="font-weight:700">${escapeHtml(f.name || f.fileName)}</div>
-                      <div class="muted small">${f.mime||f.fileType||''} • ${f.size?f.size+' bytes':''} • ${f.date?toLocalTimeString(f.date):''}</div>`;
+    div.innerHTML = `
+      <div>
+        <div style="font-weight:700">${f.name}</div>
+        <div class="muted">${f.mime||''} • ${f.size||''} • ${toLocalTimeString(f.date||'')}</div>
+      </div>
+    `;
 
-    const right = document.createElement('div');
-    right.style.display='flex'; right.style.gap='8px';
+    const r=document.createElement('div');
+    r.style.display='flex';r.style.gap='8px';
 
-    const btnView = document.createElement('a');
-    btnView.textContent='Lihat';
-    btnView.className='btn btn-secondary';
-    btnView.href = f.url || f.webViewLink || f.fileData || '#';
-    btnView.target='_blank';
+    const v=document.createElement('a');
+    v.textContent='Lihat';
+    v.className='btn-secondary';
+    v.href=f.url;v.target='_blank';
+    r.appendChild(v);
 
-    const btnDownload = document.createElement('button');
-    btnDownload.textContent='Unduh';
-    btnDownload.className='btn';
-    btnDownload.style.background='#0B74DE'; btnDownload.style.color='#fff';
-    btnDownload.onclick = ()=>downloadByUrl(f);
+    const d=document.createElement('button');
+    d.textContent='Hapus';d.style.background='#E74C3C';d.style.color='#fff';
+    d.onclick=()=>confirmDelete(f.id);
+    r.appendChild(d);
 
-    const btnDelete = document.createElement('button');
-    btnDelete.textContent='Hapus';
-    btnDelete.className='btn';
-    btnDelete.style.background='#E74C3C'; btnDelete.style.color='#fff';
-    btnDelete.onclick = ()=>confirmDelete(f.id || f.fileId || f.id);
-
-    right.appendChild(btnView);
-    right.appendChild(btnDownload);
-    right.appendChild(btnDelete);
-
-    div.appendChild(left);
-    div.appendChild(right);
+    div.appendChild(r);
     list.appendChild(div);
   });
 }
 
-function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
-
-// === NETWORK: list files from Apps Script ===
+// fetch list
 async function fetchFiles(){
   try{
-    showStatus('Mengambil daftar file...');
-    const res = await fetch(WEB_APP_URL);
-    if(!res.ok) throw new Error('Status: '+res.status);
-    const data = await res.json();
-    if(data && data.files){
-      // apps script format: id, name, url, size, date, mime
-      files = data.files.map(f => ({ id:f.id, name:f.name, url:f.url, size:f.size, date:f.date, mime:f.mime }));
-      renderFiles();
-      showStatus('Daftar file berhasil dimuat',1500);
-    } else if(Array.isArray(data)){
-      // some scripts might return array directly
-      files = data;
-      renderFiles();
-      showStatus('Daftar file berhasil dimuat',1500);
-    } else {
-      files = [];
-      renderFiles();
-      showStatus('Tidak ada file atau format respons tidak dikenal',3000);
-      console.log('Respons fetchFiles:', data);
+    showStatus("Mengambil daftar file...");
+    const res=await fetch(WEB_APP_URL);
+    const data=await res.json();
+    files=data.files||[];
+    renderFiles();
+    showStatus("Berhasil memuat");
+  }catch(e){
+    console.error(e);
+    showStatus("Gagal memuat daftar file");
+  }
+}
+
+// upload
+async function uploadToAppsScript(file,name,cat){
+  showStatus("Mengunggah...");
+
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    const base64=e.target.result.split(',')[1];
+    const body=new URLSearchParams();
+    body.append('file',base64);
+    body.append('name',name);
+    body.append('type',file.type);
+    body.append('category',cat);
+
+    const res=await fetch(WEB_APP_URL,{
+      method:"POST",
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:body.toString()
+    });
+
+    const j=await res.json();
+    if(j.status==="success"){
+      showStatus("Upload berhasil");
+      fetchFiles();
+    }else{
+      showStatus("Upload gagal");
     }
-  }catch(err){
-    console.error('fetchFiles error',err);
-    showStatus('Gagal ambil daftar file — cek console',5000);
   }
+  reader.readAsDataURL(file);
 }
 
-// === UPLOAD: send base64 via POST (Apps Script expects urlencoded with file base64) ===
-async function uploadToAppsScript(file, metaName, category){
-  try{
-    showStatus('Membaca file...');
-    const reader = new FileReader();
-    reader.onload = async function(e){
-      const base64 = e.target.result.split(',')[1];
-      showStatus('Uploading ke Drive... (lagi beberapa detik)');
-      const body = new URLSearchParams();
-      body.append('file', base64);
-      body.append('name', metaName || file.name);
-      body.append('type', file.type || 'application/octet-stream');
-      body.append('category', category || 'Lainnya');
+// delete
+async function confirmDelete(id){
+  if(!confirm("Hapus file ini?")) return;
 
-      const res = await fetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: body.toString() });
-      const j = await res.json();
-      if(res.ok && j && j.status==='success'){
-        showStatus('Sukses upload: ' + (j.name || j.id),4000);
-        await fetchFiles();
-      } else {
-        console.error('upload error', j);
-        showStatus('Upload gagal — cek console',6000);
-      }
-    };
-    reader.readAsDataURL(file);
-  }catch(err){console.error(err);showStatus('Upload gagal — cek console',6000)}
+  showStatus("Menghapus...");
+  await fetch(WEB_APP_URL+"?delete="+id);
+  fetchFiles();
 }
 
-// === DOWNLOAD helper ===
-function downloadByUrl(file){
-  // if url is Google Drive webViewLink, we open it (user can download from there)
-  if(file.url && file.url.includes('drive.google.com')){
-    window.open(file.url, '_blank');
-    return;
-  }
-  // else if fileData (data URL) present, force download
-  if(file.fileData && file.fileData.startsWith('data:')){
-    const a=document.createElement('a');a.href=file.fileData;a.download=file.name||file.fileName;a.click();return;
-  }
-  // otherwise open url
-  if(file.url) window.open(file.url, '_blank');
-}
-
-// === DELETE (try multiple ways: GET?delete=, POST action=delete) ===
-async function confirmDelete(fileId){
-  if(!confirm('Hapus file ini dari Drive?')) return;
-  showStatus('Menghapus...');
-  try{
-    // Try 1: call GET?delete=
-    let res = await fetch(WEB_APP_URL + '?delete=' + encodeURIComponent(fileId));
-    if(res.ok){
-      // some scripts return text
-      await fetchFiles();
-      showStatus('File dihapus',3000);
-      return;
-    }
-  }catch(e){console.warn('delete via GET failed',e);} 
-
-  try{
-    // Try 2: POST action=delete (some scripts accept this)
-    const body = new URLSearchParams(); body.append('action','delete'); body.append('id',fileId);
-    const res2 = await fetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: body.toString() });
-    if(res2.ok){ await fetchFiles(); showStatus('File dihapus',3000); return; }
-  }catch(e){console.warn('delete via POST failed',e);} 
-
-  showStatus('Gagal hapus — cek console',6000);
-}
-
-// === UI HANDLERS ===
-$('formUpload').addEventListener('submit', async function(e){
+// handlers
+$("formUpload").addEventListener("submit",e=>{
   e.preventDefault();
-  const file = $('fileInput').files[0];
-  if(!file){ alert('Pilih file dulu'); return; }
-  const name = $('fileName').value.trim() || file.name;
-  const category = $('category').value;
-  await uploadToAppsScript(file, name, category);
+  const f=$("fileInput").files[0];
+  if(!f) return alert("Pilih file dulu!");
+
+  uploadToAppsScript(f, $("fileName").value || f.name, $("category").value);
 });
 
-$('uploadLocal').addEventListener('click', function(){
-  // fallback: save a minimal record in localStorage
-  showStatus('Menyimpan metadata lokal...');
-  const file = $('fileInput').files[0];
-  if(!file){ alert('Pilih file dulu'); return; }
-  const db = JSON.parse(localStorage.getItem('arsipFiles')||'[]');
-  db.push({id:Date.now(),fileName: $('fileName').value||file.name, category:$('category').value, uploadedBy:'Local', date:new Date().toISOString()});
-  localStorage.setItem('arsipFiles', JSON.stringify(db));
-  showStatus('Tersimpan lokal');
+$("refreshBtn").addEventListener("click",e=>{
+  e.preventDefault(); fetchFiles();
 });
-
-$('refreshBtn').addEventListener('click', function(e){ e.preventDefault(); fetchFiles(); });
 
 // init
-fetchFiles();
+checkLogin();
+if(localStorage.getItem("activeUser")) fetchFiles();
+
 </script>
 </body>
 </html>
